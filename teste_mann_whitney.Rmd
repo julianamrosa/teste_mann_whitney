@@ -1,0 +1,170 @@
+---
+title: "Teste de Mann-Whitney"
+author: "Juliana Magalhães Rosa"
+date: "11/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Carregando bibliotecas
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+#Criando função que calcula a estatística de W
+MW <- function(x, y){
+  all <- append(x, y)
+  all <- sort(all)
+  indices <- as.numeric(list())
+  for (n in all){
+    if (n %in% y){
+      indices <- append(indices, which(all==n))
+    }
+  }
+  return(sum(indices))
+}
+```
+
+```{r}
+#Gerando mil amostras de tamanho 3 e mil amostras de tamanho 4
+n3 <- runif(3000)
+m4 <- runif(4000)
+```
+
+```{r}
+#Calculando W para os mil pares de amostras (n=3 e m=4)
+W1 <- list()
+N1=1
+M1=1
+while(N1<3000 & M1<4000){
+  W1<- append(W1, MW(n3[N1:(N1+2)], m4[M1:(M1+3)]))
+  N1 <- N1+3
+  M1 <- M1+4
+}
+W1 <- as.numeric(W1)
+```
+
+```{r}
+#Calculando U para os mil pares de amostras (n=3 e m=4)
+U1 <- W1-10
+```
+
+```{r}
+#Gerando mil amostras de tamanho 4 e mil amostras de tamanho 3
+n4 <- runif(4000)
+m3 <- runif(3000)
+```
+
+```{r}
+W2 <- list()
+N2=1
+M2=1
+while(N2<4000 & M2<3000){
+  W2<- append(W2, MW(n4[N2:(N2+3)], m3[M2:(M2+2)]))
+  N2 <- N2+4
+  M2 <- M2+3
+}
+W2 <- as.numeric(W2)
+```
+
+```{r}
+#Calculando U para os mil pares de amostras (n=4 e m=3)
+U2 <- W2-6
+```
+
+```{r}
+#Criando dataframe
+est <- data.frame(W1, U1, W2, U2)
+```
+
+```{r}
+#Boxplot para W1
+ggplot(est)+
+  geom_boxplot(aes(W1), fill="bisque")+
+  coord_flip()+
+  xlim(5, 25)+
+  theme_minimal()+
+  theme(axis.ticks.x=element_blank(), axis.text.x=element_blank())+
+  xlab("Estatística de Teste (Ws)")+
+  ggtitle("Distribuição da Estatística do Teste de Mann-Whtiney/ Wilcoxon",
+          subtitle="Amostras: n=3 e m=4")
+```
+
+```{r}
+#Boxplot para W2
+ggplot(est)+
+  geom_boxplot(aes(W2), fill="bisque3")+
+  coord_flip()+
+  xlim(5, 25)+
+  theme_minimal()+
+  theme(axis.ticks.x=element_blank(), axis.text.x=element_blank())+
+  xlab("Estatística de Teste (Ws)")+
+  ggtitle("Distribuição da Estatística do Teste de Mann-Whtiney/ Wilcoxon",
+          subtitle="Amostras: n=4 e m=3")
+```
+
+```{r}
+#Distribuição de probabilidades de W
+est%>%
+  summarize(quantil_0_1=quantile(W1, 0.001), quantil_0_5=quantile(W1, 0.005),
+            quantil_1=quantile(W1, 0.01), quantil_2_5=quantile(W1, 0.025),
+            quantil_5=quantile(W1, 0.05), quantil_10=quantile(W1, 0.1),
+            quantil_99_9=quantile(W1, 0.999), quantil_99_5=quantile(W1, 0.995),
+            quantil_99=quantile(W1, 0.99), quantil_97_5=quantile(W1, 0.975),
+            quantil_95=quantile(W1, 0.95), quantil_90=quantile(W1, 0.9))
+est%>%
+  summarize(quantil_0_1=quantile(W2, 0.001), quantil_0_5=quantile(W2, 0.005),
+            quantil_1=quantile(W2, 0.01), quantil_2_5=quantile(W2, 0.025),
+            quantil_5=quantile(W2, 0.05), quantil_10=quantile(W2, 0.1),
+            quantil_99_9=quantile(W2, 0.999), quantil_99_5=quantile(W2, 0.995),
+            quantil_99=quantile(W2, 0.99), quantil_97_5=quantile(W2, 0.975),
+            quantil_95=quantile(W2, 0.95), quantil_90=quantile(W2, 0.9))
+```
+
+```{r}
+#Boxplot para U1
+ggplot(est)+
+  geom_boxplot(aes(U1), fill="bisque")+
+  coord_flip()+
+  theme_minimal()+
+  theme(axis.ticks.x=element_blank(), axis.text.x=element_blank())+
+  xlab("Estatística U")+
+  ggtitle("Distribuição da Estatística do Teste U de Mann-Whtiney",
+          subtitle="Amostras: n=3 e m=4")
+```
+
+```{r}
+#Boxplot para U2
+ggplot(est)+
+  geom_boxplot(aes(U2), fill="bisque3")+
+  coord_flip()+
+  theme_minimal()+
+  theme(axis.ticks.x=element_blank(), axis.text.x=element_blank())+
+  xlab("Estatística U")+
+  ggtitle("Distribuição da Estatística do Teste U de Mann-Whtiney",
+          subtitle="Amostras: n=4 e m=3")
+```
+
+```{r}
+#Distribuição de probabilidades de U
+est%>%
+  summarize(quantil_0_1=quantile(U1, 0.001), quantil_0_5=quantile(U1, 0.005),
+            quantil_1=quantile(U1, 0.01), quantil_2_5=quantile(U1, 0.025),
+            quantil_5=quantile(U1, 0.05), quantil_10=quantile(U1, 0.1),
+            quantil_99_9=quantile(U1, 0.999), quantil_99_5=quantile(U1, 0.995),
+            quantil_99=quantile(U1, 0.99), quantil_97_5=quantile(U1, 0.975),
+            quantil_95=quantile(U1, 0.95), quantil_90=quantile(U1, 0.9))
+est%>%
+  summarize(quantil_0_1=quantile(U2, 0.001), quantil_0_5=quantile(U2, 0.005),
+            quantil_1=quantile(U2, 0.01), quantil_2_5=quantile(U2, 0.025),
+            quantil_5=quantile(U2, 0.05), quantil_10=quantile(U2, 0.1),
+            quantil_99_9=quantile(U2, 0.999), quantil_99_5=quantile(U2, 0.995),
+            quantil_99=quantile(U2, 0.99), quantil_97_5=quantile(U2, 0.975),
+            quantil_95=quantile(U2, 0.95), quantil_90=quantile(U2, 0.9))
+```
+
